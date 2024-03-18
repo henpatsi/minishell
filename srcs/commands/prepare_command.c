@@ -6,7 +6,7 @@
 /*   By: hpatsi <hpatsi@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/07 09:58:30 by hpatsi            #+#    #+#             */
-/*   Updated: 2024/02/22 12:10:43 by hpatsi           ###   ########.fr       */
+/*   Updated: 2024/03/08 10:31:25 by hpatsi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,6 +66,8 @@ int	expand_command(t_command *command, t_envinfo envinfo, int i)
 int	prepare_command(t_command *command,
 	char *command_str, t_envinfo envinfo, int i)
 {
+	int	ret;
+
 	if (prepare_argv(command, command_str) == -1)
 		return (1);
 	if (expand_command(command, envinfo, i) == -1)
@@ -73,12 +75,15 @@ int	prepare_command(t_command *command,
 		free_split_vec(&command->argv);
 		return (1);
 	}
-	if (command->argv.len != 0
-		&& add_path((char **) vec_get(&command->argv, 0), envinfo.env) == -1)
+	if (command->argv.len != 0)
+		ret = find_command((char **) vec_get(&command->argv, 0), envinfo.env);
+	else
+		ret = 1;
+	if (ret != 0)
 	{
 		free_split_vec(&command->argv);
 		vec_free(&command->redirects);
-		return (127);
+		return (ret);
 	}
 	command->env = envinfo.env;
 	return (0);
